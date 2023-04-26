@@ -2,10 +2,9 @@
   "name": "animetube-scraper",
   "version": "1.0.0",
   "description": "",
-  "main": "scrape.js",
+  "main": "index.js",
   "scripts": {
-    "scrape": "node scrape.js",
-    "convert": "node conver.js"
+    "scrape": "node index.js"
   },
   "keywords": [],
   "author": "",

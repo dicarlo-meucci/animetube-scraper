@@ -6,7 +6,7 @@ let result = []
 
 	; (async () =>
 	{
-		const alphabet = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+		const alphabet = ['a', 'b', 'c', 'd', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 		// timeout ensures that everything loads properly
 		const TIMEOUT = 5000
 		let options = new chrome.Options()
@@ -27,22 +27,25 @@ let result = []
 			{
 				// to make the cards visible
 				if (i > 5)
-				await driver.executeScript('scroll(0, 250);')
+					await driver.executeScript('scroll(0, 250);')
 				// relocate the cards
 				const cards = await driver.findElements({ className: 'col-6 col-md-3 col-lg-3 mobile-rendering-contents-padding' })
 				let titleElement = await cards[i].findElement({ className: 'text-center default-text paddingtop-5' })
 				let title = await titleElement.getText()
 				await cards[i].click()
 				// Re-locate the element before interacting with it
-				let descriptionElement
 				let description
-				
-				try {
-					descriptionElement = await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/p[11]' })
-					description = await descriptionElement.getText()
-				} catch (e) {
-					descriptionElement = await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/div[2]' })
-					description = await descriptionElement.getText()
+				let cover = await (await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/div/img' })).getAttribute('src')
+				let date = (await (await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/p[4]' })).getText()).replace('ANNO DI USCITA: ', '')
+				let studio = (await (await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/p[5]' })).getText()).replaceAll('STUDIO: ', '').replaceAll('AUTORE: ', '')
+				let tagsText = (await (await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/p[6]' })).getText()).replace('GENERI: ', '')
+				let tags = tagsText.split(',')
+				try
+				{
+					description = await (await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/p[11]' })).getText()
+				} catch (e)
+				{
+					description = await (await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[4]/div[2]/div[2]' })).getText()
 				}
 				let episodesDiv = await driver.findElement({ xpath: '/html/body/main/div[2]/div[2]/div/div[1]/div/div[2]/div[3]/div[2]' })
 				let episodes = await episodesDiv.findElements({ tagName: 'a' })
@@ -55,13 +58,25 @@ let result = []
 
 				let animeObject = {
 					title,
+					date,
+					studio,
+					tags,
 					description,
+					cover,
 					episodes: episodeLinks
 				}
 
 				result.push(animeObject)
-				fs.writeFileSync('anime.json', JSON.stringify(result, null, 2))
 				console.log(animeObject)
+				let sql = ''
+				for (anime of result)
+				{
+					sql += `INSERT INTO Anime (id, nome, studio, data, descrizione, copertina)\nVALUES (default, '${anime.title.replaceAll("'", "\\'")}', '${anime.studio.replaceAll("'", "\\'")}', '${anime.date}-0-1', '${anime.description.replaceAll("'", "\\'")}', '${anime.cover}');\n`
+					for (link of anime.episodes)
+						sql += `INSERT INTO Episodio (id, link, AnimeID) VALUES (default, '${link.replaceAll("'", "\\'")}', (SELECT id FROM Anime WHERE nome = '${anime.title.replaceAll("'", "\\'")}'));\n`
+				}
+	
+				fs.writeFileSync('dump.sql', sql)
 				await driver.executeScript("window.history.go(-1)");
 			}
 		}
