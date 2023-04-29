@@ -71,9 +71,9 @@ let result = []
 				let sql = ''
 				for (anime of result)
 				{
-					sql += `INSERT INTO Anime (id, nome, studio, data, descrizione, copertina)\nVALUES (default, '${anime.title.replaceAll("'", "\\'")}', '${anime.studio.replaceAll("'", "\\'")}', '${anime.date}-0-1', '${anime.description.replaceAll("'", "\\'")}', '${anime.cover}');\n`
+					sql += `INSERT INTO Anime (id, name, studio, date, description, cover)\nVALUES (default, '${anime.title.replaceAll("'", "\\'")}', '${anime.studio.replaceAll("'", "\\'")}', '${anime.date}-0-1', '${anime.description.replaceAll("'", "\\'")}', '${anime.cover}');\n`
 					for (link of anime.episodes)
-						sql += `INSERT INTO Episodio (id, link, AnimeID) VALUES (default, '${link.replaceAll("'", "\\'")}', (SELECT id FROM Anime WHERE nome = '${anime.title.replaceAll("'", "\\'")}'));\n`
+						sql += `INSERT INTO Episode (id, link, anime) VALUES (default, '${link.replaceAll("'", "\\'")}', (SELECT id FROM Anime WHERE name = '${anime.title.replaceAll("'", "\\'")}'));\n`
 				}
 	
 				fs.writeFileSync('dump.sql', sql)
