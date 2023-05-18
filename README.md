@@ -7,6 +7,7 @@ This script was made to scrape an anime website in order to populate the [AnimeT
 ```bash
 git clone https://github.com/dicarlo-meucci/animetube-scraper.git
 cd animetube-scraper
+npm install
 node .
 ```
 
