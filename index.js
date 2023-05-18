@@ -1,7 +1,6 @@
 const { Builder } = require('selenium-webdriver')
 const chrome = require('selenium-webdriver/chrome')
 const fs = require('fs')
-const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 let result = []
 
 	; (async () =>
@@ -74,9 +73,14 @@ let result = []
 					sql += `INSERT INTO Anime (id, name, studio, date, description, cover)\nVALUES (default, '${anime.title.replaceAll("'", "\\'")}', '${anime.studio.replaceAll("'", "\\'")}', '${anime.date}-0-1', '${anime.description.replaceAll("'", "\\'")}', '${anime.cover}');\n`
 					for (link of anime.episodes)
 						sql += `INSERT INTO Episode (id, link, anime) VALUES (default, '${link.replaceAll("'", "\\'")}', (SELECT id FROM Anime WHERE name = '${anime.title.replaceAll("'", "\\'")}'));\n`
+
+					for (tag of anime.tags)
+					{
+						sql += `INSERT INTO Tag (id, name, anime) VALUES (default, '${tag.replaceAll("'", "\\'")}', (SELECT id FROM Anime WHERE name = '${anime.title.replaceAll("'", "\\'")}'));\n`
+					}
 				}
-	
-				fs.writeFileSync('dump.sql', sql)
+
+				fs.writeFileSync('dump11.sql', sql)
 				await driver.executeScript("window.history.go(-1)");
 			}
 		}

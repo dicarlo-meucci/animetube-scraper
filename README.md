@@ -1,7 +1,9 @@
 # AnimeTube Scraper
+
 This script was made to scrape an anime website in order to populate the [AnimeTube DB](https://github.com/dicarlo-meucci/animetube-server)
 
 ## Setup
+
 ```bash
 git clone https://github.com/dicarlo-meucci/animetube-scraper.git
 cd animetube-scraper
